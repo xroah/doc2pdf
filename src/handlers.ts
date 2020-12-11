@@ -45,12 +45,13 @@ export function downloadFile(url: string) {
                 filename: existingPdf,
                 exists: true
             })
+
             return
         }
 
         mkdir(dir)
 
-        const writeStream = fs.createWriteStream(filename);
+        const writeStream = fs.createWriteStream(filename)
         const handleRes = (res: http.IncomingMessage) => {
             res.pipe(writeStream)
             res.on("end", () => {
@@ -72,7 +73,7 @@ export function downloadFile(url: string) {
             req.on("error", err => reject(err))
             req.end()
         } else {
-            reject()
+            reject("error")
         }
     })
 }
@@ -91,7 +92,10 @@ export function convert2pdf(filename: string) {
                 "--outdir",
                 dir,
                 filename
-            ]
+            ],
+            {
+                stdio: "inherit"
+            }
         )
             .on("close", code => {
                 if (code === 0) {
