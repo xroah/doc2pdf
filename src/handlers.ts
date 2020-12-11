@@ -9,10 +9,10 @@ export const pdfDir = path.join(__dirname, "../pdfs")
 export const docDir = path.join("__dirname", "../docs")
 
 function getToday() {
-    const two = (num: number) => (100 + num).toString().substring(1)
+    const c = (n: number) => (100 + n).toString().substring(1)
     const date = new Date()
 
-    return `${date.getFullYear()}/${two(date.getMonth() + 1)}/${two(date.getDate())}`
+    return `${date.getFullYear()}/${c(date.getMonth() + 1)}/${c(date.getDate())}`
 }
 
 export function mkdir(dir: string) {
@@ -23,21 +23,24 @@ export function mkdir(dir: string) {
 
 export function downloadFile(url: string) {
     return new Promise((resolve, reject) => {
-        const urlObj = new URL(url)
+        const {
+            hostname,
+            port,
+            pathname,
+            protocol
+        } = new URL(url)
         const todayPath = getToday()
         const {
             base,
             name
-        } = path.parse(urlObj.pathname)
-        const dir = path.join(docDir, todayPath)
-        const filename = path.join(dir, base)
+        } = path.parse(pathname)
+        const filename = path.join(docDir, base)
         const existingPdf = path.join(pdfDir, todayPath, `${name}.pdf`)
-        let req = null
         const reqOpts = {
-            hostname: urlObj.hostname,
+            hostname,
             method: "GET",
-            port: urlObj.port,
-            path: urlObj.pathname
+            port,
+            path: pathname
         }
 
         if (fs.existsSync(existingPdf)) {
@@ -48,8 +51,6 @@ export function downloadFile(url: string) {
 
             return
         }
-
-        mkdir(dir)
 
         const writeStream = fs.createWriteStream(filename)
         const handleRes = (res: http.IncomingMessage) => {
@@ -62,10 +63,11 @@ export function downloadFile(url: string) {
                 })
             })
         }
+        let req = null
 
-        if (urlObj.protocol.includes("http")) {
+        if (protocol.includes("http")) {
             req = http.request(reqOpts, handleRes)
-        } else if (urlObj.protocol.includes("https")) {
+        } else if (protocol.includes("https")) {
             req = https.request(reqOpts, handleRes)
         }
 
