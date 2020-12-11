@@ -12,7 +12,7 @@ const app = express()
 
 mkdir(pdfDir)
 mkdir(docDir)
-app.use("/pdf", express.static(pdfDir))
+
 app.get("/convert2pdf", (req, res) => {
     const url = req.query.url
     const response = (pdfFile: string) => {
